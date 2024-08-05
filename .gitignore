@@ -77,6 +77,10 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+research.ipynb
+
+# custom folders
+artifacts/
 
 # IPython
 profile_default/
