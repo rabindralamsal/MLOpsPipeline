@@ -6,6 +6,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
+from src.components.data_transformation import DataTransformationConfig, DataTransformer
+from src.components.model_trainer import ModelTrainerConfig, ModelTrainer
 
 @dataclass
 class DataIngestionConfig:
@@ -33,7 +35,7 @@ class DataIngestion:
             test_df.to_csv(self.ingestion_config.test_data_path, header=True, index=False)
             logging.info('Train - test split created and saved. Ingestion completed.')
 
-            return(
+            return (
                 self.ingestion_config.train_data_path,
                 self.ingestion_config.test_data_path,
             )
@@ -41,6 +43,12 @@ class DataIngestion:
             raise CustomException(e, sys)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     obj = DataIngestion()
-    obj.init_data_ingestion()
+    train_data_path, test_data_path = obj.init_data_ingestion()
+    data_transformation = DataTransformer()
+    X_train, X_test, y_train, y_test, _ = data_transformation.init_data_transformation(train_data_path, test_data_path)
+    model_train = ModelTrainer()
+    model_train.init_model_trainer(X_train, X_test, y_train, y_test)
+
+

@@ -80,7 +80,6 @@ target/
 research.ipynb
 
 # custom folders
-artifacts/
 
 # IPython
 profile_default/
