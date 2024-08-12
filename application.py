@@ -1,6 +1,7 @@
 import pandas as pd
 from src.pipeline.predict_pipeline import PredictPipeline
 from fastapi import FastAPI
+
 from pydantic import BaseModel
 
 application = FastAPI()
