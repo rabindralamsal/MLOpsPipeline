@@ -5,15 +5,18 @@ import sys
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
+from src.components.data_transformation import DataTransformer
+from src.components.model_trainer import ModelTrainer
+from src.variables import AppWideVariables
 
-from src.components.data_transformation import DataTransformationConfig, DataTransformer
-from src.components.model_trainer import ModelTrainerConfig, ModelTrainer
 
 @dataclass
 class DataIngestionConfig:
-    train_data_path: str = os.path.join("artifacts", "train.csv")
-    test_data_path: str = os.path.join("artifacts", "test.csv")
-    raw_data_path: str = os.path.join("artifacts", "raw.csv")
+    variables = AppWideVariables().variables.data_ingestion_variables
+    train_data_path: str = os.path.join(variables.artifacts_folder_name, variables.train_file)
+    test_data_path: str = os.path.join(variables.artifacts_folder_name, variables.test_file)
+    raw_data_path: str = os.path.join(variables.artifacts_folder_name, variables.raw_file)
+    source_file_path: str = variables.source_file
 
 
 class DataIngestion:
@@ -23,7 +26,7 @@ class DataIngestion:
     def init_data_ingestion(self):
         logging.info("Initializing data ingestion")
         try:
-            df = pd.read_csv("https://raw.githubusercontent.com/krishnaik06/mlproject/main/notebook/data/stud.csv")
+            df = pd.read_csv(self.ingestion_config.source_file_path)
             logging.info('Dataset loaded.')
 
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
@@ -44,11 +47,15 @@ class DataIngestion:
 
 
 if __name__ == '__main__':
+    logging.info("----------DATA INGESTION INITIALIZED----------")
     obj = DataIngestion()
     train_data_path, test_data_path = obj.init_data_ingestion()
+    logging.info("-----------DATA TRANSFORMATION INITIALIZED----------")
     data_transformation = DataTransformer()
     X_train, X_test, y_train, y_test, _ = data_transformation.init_data_transformation(train_data_path, test_data_path)
+    logging.info("-----------MODEL TRAINING INITIALIZED----------")
     model_train = ModelTrainer()
     model_train.init_model_trainer(X_train, X_test, y_train, y_test)
+    logging.info("Best model saved and is ready to be used via API.")
 
 

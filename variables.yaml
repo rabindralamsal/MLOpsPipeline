@@ -1,0 +1,20 @@
+data_ingestion_variables:
+  source_file: /Users/rlamsal/Desktop/raw.csv #source
+  raw_file: raw.csv
+  train_file: train.csv
+  test_file: test.csv
+  test_size: 0.2
+  artifacts_folder_name: artifacts
+
+data_transformation_variables:
+  data_transformer_name: data_transformer.pkl
+
+model_training_variables:
+  batch_size: 32
+  epochs: 100
+  patience: 5
+  trained_model_save_folder_name: model_checkpoints
+
+endpoint_variables:
+  columns_saved_file_name: columns.yaml
+

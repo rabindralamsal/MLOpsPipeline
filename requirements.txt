@@ -9,4 +9,6 @@ fastapi
 uvicorn
 gunicorn
 pydantic
+python-box
+pyYAML
 -e .

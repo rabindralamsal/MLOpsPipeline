@@ -2,18 +2,15 @@ import pandas as pd
 from src.pipeline.predict_pipeline import PredictPipeline
 from fastapi import FastAPI
 from pydantic import BaseModel
+import os
+from src.utils import yaml_to_pydantic
+from src.variables import AppWideVariables
+
+variables = AppWideVariables().variables
 
 application = FastAPI()
 
-
-class Item(BaseModel):
-    gender: str
-    race_ethnicity: str
-    parental_level_of_education: str
-    lunch: str
-    test_preparation_course: str
-    reading_score: int
-    writing_score: int
+Item = yaml_to_pydantic(os.path.join(variables.data_ingestion_variables.artifacts_folder_name, variables.endpoint_variables.columns_saved_file_name), "CustomPydanticModel")
 
 
 @application.post("/")

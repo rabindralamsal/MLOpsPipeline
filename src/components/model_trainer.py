@@ -1,6 +1,5 @@
 from src.exception import CustomException
 from src.logger import logging
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
@@ -9,11 +8,13 @@ import os
 import sys
 import numpy as np
 from src.utils import evaluate
+from src.variables import AppWideVariables
 
 
 @dataclass
 class ModelTrainerConfig:
-    trained_model_path: str = os.path.join("artifacts", "model_checkpoints")
+    variables = AppWideVariables().variables
+    trained_model_path: str = os.path.join(variables.data_ingestion_variables.artifacts_folder_name, variables.model_training_variables.trained_model_save_folder_name)
 
 
 class StudentDataset(Dataset):
@@ -50,15 +51,14 @@ class ModelTrainer:
         try:
             num_columns = X_train.shape[1]
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            #device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-            # this is for Apple Silicon devices
             logging.info(f"Using device: {device}")
 
             train_dataset = StudentDataset(X_train, y_train)
             test_dataset = StudentDataset(X_test, y_test)
 
-            train_dataloader = DataLoader(train_dataset, batch_size=32)
-            test_dataloader = DataLoader(test_dataset, batch_size=32)
+            batch_size = self.trainer_config.variables.model_training_variables.batch_size
+            train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
+            test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
             logging.info(f"Training and testing dataloader initialized")
 
             model = SingleLayerNN(input_size=num_columns).to(device)
@@ -67,8 +67,8 @@ class ModelTrainer:
             loss_function = nn.MSELoss()
             optimizer = torch.optim.AdamW(model.parameters(), lr=2e-3)
 
-            epochs = 50
-            patience = 5
+            epochs = self.trainer_config.variables.model_training_variables.epochs
+            patience = self.trainer_config.variables.model_training_variables.patience
             best_score = None
             counter = 0
 
@@ -136,7 +136,7 @@ class ModelTrainer:
 
                     if epoch == epochs - 1:
                         logging.info(f"Finished training for specified {epoch + 1} epochs.")
-                        logging.info(f"Best scores are: {tracked_scores_test}")
+                        logging.info(f"Tracked metrics: {tracked_scores_test}")
 
                 else:
                     counter += 1

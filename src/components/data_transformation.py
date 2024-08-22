@@ -1,19 +1,21 @@
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import save_object
+from src.utils import save_object, extract_save_columns
 from dataclasses import dataclass
 import os
 import sys
 import pandas as pd
-import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from src.variables import AppWideVariables
+
 
 @dataclass
 class DataTransformationConfig:
-    data_transformer_path = os.path.join('artifacts', 'data_transformer.pkl')
+    variables = AppWideVariables().variables
+    data_transformer_path = os.path.join(variables.data_ingestion_variables.artifacts_folder_name, variables.data_transformation_variables.data_transformer_name)
 
 
 class DataTransformer:
@@ -58,7 +60,7 @@ class DataTransformer:
             test_df = pd.read_csv(test_data)
             logging.info("Train and test data read completed.")
 
-            to_predict_column = "math_score"
+            to_predict_column = train_df.columns[-1]
             transformer = self.get_transformer(train_df.drop(columns=[to_predict_column]))
             logging.info("Data transformer loaded.")
 
@@ -72,7 +74,13 @@ class DataTransformer:
             input_features_test_processed = transformer.transform(input_features_test)
 
             save_object(file_path=self.transformation_config.data_transformer_path, obj=transformer)
-            logging.info('Data transformer saved')
+            logging.info('Data transformer saved.')
+
+            extract_save_columns(input_features_train, os.path.join(self.transformation_config.variables.data_ingestion_variables.artifacts_folder_name, self.transformation_config.variables.endpoint_variables.columns_saved_file_name))
+            print(self.transformation_config.variables.data_ingestion_variables.artifacts_folder_name)
+            print(self.transformation_config.variables.endpoint_variables.columns_saved_file_name)
+            print(os.path.join(self.transformation_config.variables.data_ingestion_variables.artifacts_folder_name, self.transformation_config.variables.endpoint_variables.columns_saved_file_name))
+            logging.info('Columns and datatypes exported.')
 
             return (input_features_train_processed, input_features_test_processed, to_predict_features_train,
                     to_predict_features_test, self.transformation_config.data_transformer_path)
